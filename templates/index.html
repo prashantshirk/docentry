@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* Main Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Forms & Buttons */
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+        }
+
+        .btn-info {
+            background: #17a2b8;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        /* Chat Modal Specifics */
+        .chat-modal-body {
+            display: flex;
+            height: 500px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .chat-sidebar {
+            width: 35%;
+            border-right: 1px solid var(--border-color);
+            background: #f8f9fa;
+            overflow-y: auto;
+        }
+
+        .chat-main {
+            width: 65%;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .chat-thread {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .chat-thread:hover,
+        .chat-thread.active {
+            background: #e9ecef;
+        }
+
+        .chat-thread.unread {
+            border-left: 4px solid var(--primary-color);
+            background: #e3f2fd;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .msg.admin {
+            align-self: flex-end;
+            background: #d1e7dd;
+            color: #0f5132;
+            margin-left: auto;
+        }
+
+        .msg.patient {
+            align-self: flex-start;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            margin-right: auto;
+        }
+
+        .chat-input-area {
+            padding: 10px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Patient Info Card */
+        .info-card-row {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .info-card-label {
+            width: 120px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .info-card-value {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-header">
+        <h2>Hospital Admin</h2>
+        <a href="/logout" class="btn btn-danger" style="text-decoration: none;">Logout</a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="total-patients">-</div>
+            <div class="stat-label">Total Patients</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="patients-today">-</div>
+            <div class="stat-label">Added Today</div>
+        </div>
+        <div class="stat-card" onclick="openMessagesModal()">
+            <div class="stat-number"><i class="fas fa-comments"></i></div>
+            <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-card" onclick="openViewAllModal()">
+            <div class="stat-number"><i class="fas fa-users"></i></div>
+            <div class="stat-label">View All Patients</div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <div>
+            <div class="section">
+                <h3>Upcoming Appointments</h3>
+                <div id="appointments-list" style="max-height: 400px; overflow-y: auto;">Loading...</div>
+            </div>
+
+            <div class="section">
+                <h3>Search Patient</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="search_query" placeholder="ID or Name">
+                    <button onclick="searchPatient()" class="btn btn-primary" style="width: auto;">Search</button>
+                </div>
+                <div id="patient_info"></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section">
+                <h3>Add New Patient</h3>
+                <div id="add-patient-success" class="alert alert-success"></div>
+                <input type="text" id="new_name" placeholder="Name">
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="new_age" placeholder="Age">
+                    <input type="tel" id="new_phone" placeholder="Phone">
+                </div>
+                <textarea id="new_address" rows="2" placeholder="Address"></textarea>
+                <textarea id="new_problems" rows="3" placeholder="Problems/History"></textarea>
+                <button onclick="addPatient()" class="btn btn-primary">Add Patient</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="messagesModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close-btn"
+                onclick="document.getElementById('messagesModal').style.display='none'">&times;</span>
+            <h3>Messages</h3>
+            <div class="chat-modal-body">
+                <div class="chat-sidebar" id="chat-threads">
+                </div>
+                <div class="chat-main">
+                    <div style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; background: #f8f9fa;"
+                        id="chat-header">
+                        Select a conversation
+                    </div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-area">
+                        <input type="hidden" id="current-chat-id">
+                        <input type="text" id="chat-input" placeholder="Type a message...">
+                        <button onclick="sendChatMessage()" class="btn btn-primary" style="width: auto;">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="patientInfoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn"
+                onclick="document.getElementById('patientInfoModal').style.display='none'">&times;</span>
+            <h3>Patient Details</h3>
+            <div id="patient-details-content"></div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="document.getElementById('patientInfoModal').style.display='none'"
+                    class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewAllModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn"
+                onclick="document.getElementById('viewAllModal').style.display='none'">&times;</span>
+            <h3>All Patients</h3>
+            <div id="all-patients-container" style="max-height: 400px; overflow-y: auto;"></div>
+            <button onclick="window.location.href='/download_csv'" class="btn btn-primary"
+                style="margin-top: 15px;">Download CSV</button>
+        </div>
+    </div>
+
+    <div id="addVisitModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn"
+                onclick="document.getElementById('addVisitModal').style.display='none'">&times;</span>
+            <h3>Add Visit Record</h3>
+            <input type="hidden" id="visit_pid">
+            <input type="date" id="visit_date">
+            <input type="text" id="visit_diagnosis" placeholder="Diagnosis">
+            <textarea id="visit_prescription" placeholder="Prescription"></textarea>
+            <textarea id="visit_notes" placeholder="Notes"></textarea>
+            <button onclick="submitVisit()" class="btn btn-primary">Save Visit</button>
+        </div>
+    </div>
+
+    <div id="bookApptModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn"
+                onclick="document.getElementById('bookApptModal').style.display='none'">&times;</span>
+            <h3>Book Appointment</h3>
+            <input type="hidden" id="appt_pid">
+            <input type="text" id="appt_pname" readonly style="background:#eee;">
+            <input type="date" id="appt_date">
+            <input type="time" id="appt_time">
+            <input type="text" id="appt_doc" placeholder="Doctor Name">
+            <input type="text" id="appt_issue" placeholder="Issue/Reason">
+            <button onclick="submitAppt()" class="btn btn-primary">Book</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Initialization ---
+        window.onload = function () {
+            loadStats();
+            loadAppts();
+            // Start chat polling
+            setInterval(loadChatThreads, 5000);
+
+            // Set default date for visit modal
+            document.getElementById('visit_date').value = new Date().toISOString().split('T')[0];
+        };
+
+        // --- Dashboard Stats ---
+        async function loadStats() {
+            try {
+                const res = await fetch('/dashboard_stats');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('total-patients').innerText = data.total_patients;
+                    document.getElementById('patients-today').innerText = data.patients_today;
+                }
+            } catch (e) {
+                console.error('Error loading stats:', e);
+            }
+        }
+
+        // --- Appointments ---
+        async function loadAppts() {
+            try {
+                const res = await fetch('/get_appointments');
+                const data = await res.json();
+                if (data.success) {
+                    const list = document.getElementById('appointments-list');
+                    if (data.appointments.length === 0) {
+                        list.innerHTML = '<p>No upcoming appointments.</p>';
+                        return;
+                    }
+                    let html = '';
+                    data.appointments.forEach(appt => {
+                        // FIXED: Added single quotes around appt.appt_id
+                        html += `
+                        <div class="appointment-card" style="border:1px solid #eee; padding:10px; margin-bottom:10px; border-radius:5px;">
+                            <div style="font-weight:bold;">${appt.patient_name}</div>
+                            <div>${appt.date} at ${appt.time}</div>
+                            <div style="font-size:0.9em; color:#666;">${appt.issue}</div>
+                            <button onclick="deleteAppointment('${appt.appt_id}')" class="btn btn-danger" style="padding:5px 10px; font-size:0.8em; margin-top:5px;">Cancel</button>
+                        </div>
+                        `;
+                    });
+                    list.innerHTML = html;
+                }
+            } catch (e) {
+                console.error('Error loading appointments:', e);
+                document.getElementById('appointments-list').innerText = 'Error loading appointments.';
+            }
+        }
+
+        async function deleteAppointment(id) {
+            if (!confirm('Are you sure?')) return;
+            try {
+                const res = await fetch(`/delete_appointment/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    loadAppts();
+                } else {
+                    alert('Failed to delete: ' + data.message);
+                }
+            } catch (e) {
+                alert('Error deleting appointment');
+            }
+        }
+
+        // --- Patient Management ---
+        async function searchPatient() {
+            const query = document.getElementById('search_query').value;
+            if (!query) return;
+            try {
+                const res = await fetch(`/search_patient?query=${query}`);
+                const data = await res.json();
+                const container = document.getElementById('patient_info');
+
+                if (data.success && data.results.length > 0) {
+                    const p = data.results[0];
+                    // FIXED: Added single quotes around p.id in all onclick functions
+                    let html = `
+                    <div style="border:1px solid #ddd; padding:15px; border-radius:5px; margin-top:10px;">
+                        <h4>${p.name} (ID: ${p.id})</h4>
+                        <p>Age: ${p.age}</p>
+                        <p>Phone: ${p.phone}</p>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button onclick="openAddVisit('${p.id}')" class="btn btn-success">Add Visit</button>
+                            <button onclick="openBookAppt('${p.id}', '${p.name}')" class="btn btn-info">Book Appt</button>
+                            <button onclick="openPatientInfo('${p.id}')" class="btn btn-secondary">Details</button>
+                            <button onclick="deletePatient('${p.id}')" class="btn btn-danger">Delete</button>
+                        </div>
+                    `;
+
+                    // Fetch and display visits
+                    try {
+                        const vRes = await fetch(`/get_visits/${p.id}`);
+                        const vData = await vRes.json();
+                        if (vData.success && vData.visits.length > 0) {
+                            html += '<h5 style="margin-top:20px; border-bottom:1px solid #eee; padding-bottom:5px;">Previous Visits</h5>';
+                            html += '<div style="max-height: 300px; overflow-y: auto;">';
+                            vData.visits.forEach(v => {
+                                html += `
+                                <div style="background:#f9f9f9; padding:10px; margin-bottom:10px; border-radius:5px; border-left: 3px solid var(--primary-color);">
+                                    <div style="font-weight:bold; display:flex; justify-content:space-between;">
+                                        <span>${v.date}</span>
+                                        <span style="font-size:0.9em; color:#666;">${v.doctor_name || ''}</span>
+                                    </div>
+                                    <div style="margin-top:5px;"><strong>Diagnosis:</strong> ${v.diagnosis}</div>
+                                    ${v.prescription ? `<div style="margin-top:5px; font-size:0.9em;"><strong>Rx:</strong> ${v.prescription}</div>` : ''}
+                                    ${v.notes ? `<div style="margin-top:5px; font-size:0.9em; color:#555;"><em>${v.notes}</em></div>` : ''}
+                                </div>
+                                `;
+                            });
+                            html += '</div>';
+                        } else {
+                            html += '<p style="margin-top:15px; color:#666;">No previous visits found.</p>';
+                        }
+                    } catch (e) {
+                        console.error('Error fetching visits', e);
+                        html += '<p style="color:red;">Error loading visits.</p>';
+                    }
+
+                    html += '</div>'; // Close main div
+                    container.innerHTML = html;
+
+                } else {
+                    container.innerHTML = '<p>No patient found.</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error searching patient');
+            }
+        }
+
+        async function addPatient() {
+            const data = {
+                name: document.getElementById('new_name').value,
+                age: document.getElementById('new_age').value,
+                phone: document.getElementById('new_phone').value,
+                address: document.getElementById('new_address').value,
+                problems: document.getElementById('new_problems').value
+            };
+
+            if (!data.name || !data.age || !data.problems) {
+                alert('Name, Age, and Problems are required');
+                return;
+            }
+
+            try {
+                const res = await fetch('/add_patient', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    document.getElementById('add-patient-success').innerText = result.message;
+                    document.getElementById('add-patient-success').style.display = 'block';
+                    // Clear form
+                    document.getElementById('new_name').value = '';
+                    document.getElementById('new_age').value = '';
+                    document.getElementById('new_phone').value = '';
+                    document.getElementById('new_address').value = '';
+                    document.getElementById('new_problems').value = '';
+
+                    loadStats(); // Refresh stats
+                    setTimeout(() => {
+                        document.getElementById('add-patient-success').style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (e) {
+                alert('Error adding patient');
+            }
+        }
+
+        async function deletePatient(id) {
+            if (!confirm('Are you sure you want to delete this patient?')) return;
+            try {
+                const res = await fetch(`/delete_patient/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Patient deleted');
+                    document.getElementById('patient_info').innerHTML = '';
+                    loadStats();
+                } else {
+                    alert('Failed to delete');
+                }
+            } catch (e) {
+                alert('Error deleting patient');
+            }
+        }
+
+        // --- Modals & Actions ---
+        function openAddVisit(id) {
+            document.getElementById('visit_pid').value = id;
+            document.getElementById('addVisitModal').style.display = 'flex';
+        }
+
+        async function submitVisit() {
+            const data = {
+                patient_id: document.getElementById('visit_pid').value,
+                date: document.getElementById('visit_date').value,
+                diagnosis: document.getElementById('visit_diagnosis').value,
+                prescription: document.getElementById('visit_prescription').value,
+                notes: document.getElementById('visit_notes').value
+            };
+
+            if (!data.diagnosis || !data.date) {
+                alert('Diagnosis and Date are required');
+                return;
+            }
+
+            try {
+                const res = await fetch('/add_visit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if ((await res.json()).success) {
+                    alert('Saved');
+                    document.getElementById('addVisitModal').style.display = 'none';
+                    // Clear fields
+                    document.getElementById('visit_diagnosis').value = '';
+                    document.getElementById('visit_prescription').value = '';
+                    document.getElementById('visit_notes').value = '';
+                } else {
+                    alert('Failed to save visit');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error saving visit: ' + e);
+            }
+        }
+
+        function openBookAppt(id, name) {
+            document.getElementById('appt_pid').value = id;
+            document.getElementById('appt_pname').value = name;
+            document.getElementById('bookApptModal').style.display = 'flex';
+        }
+
+        async function submitAppt() {
+            const data = {
+                patient_id: document.getElementById('appt_pid').value,
+                patient_name: document.getElementById('appt_pname').value,
+                date: document.getElementById('appt_date').value,
+                time: document.getElementById('appt_time').value,
+                doctor: document.getElementById('appt_doc').value,
+                issue: document.getElementById('appt_issue').value
+            };
+            if (!data.date || !data.time) { alert('Date/Time required'); return; }
+            try {
+                const res = await fetch('/book_appointment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if ((await res.json()).success) {
+                    alert('Booked');
+                    document.getElementById('bookApptModal').style.display = 'none';
+                    loadAppts();
+                } else { alert('Failed to book appointment'); }
+            } catch (e) { console.error(e); alert('Error booking appointment: ' + e); }
+        }
+
+        function openViewAllModal() {
+            document.getElementById('viewAllModal').style.display = 'flex';
+            fetch('/get_all_patients').then(r => r.json()).then(d => {
+                if (d.success) {
+                    let html = '<table style="width:100%; border-collapse:collapse;"><tr><th style="text-align:left; border-bottom:1px solid #ddd;">ID</th><th style="text-align:left; border-bottom:1px solid #ddd;">Name</th><th style="text-align:left; border-bottom:1px solid #ddd;">Phone</th></tr>';
+                    d.patients.forEach(p => html += `<tr><td style="padding:8px; border-bottom:1px solid #eee;">${p.id}</td><td style="padding:8px; border-bottom:1px solid #eee;">${p.name}</td><td style="padding:8px; border-bottom:1px solid #eee;">${p.phone}</td></tr>`);
+                    html += '</table>';
+                    document.getElementById('all-patients-container').innerHTML = html;
+                }
+            });
+        }
+
+        async function openPatientInfo(id) {
+            try {
+                const res = await fetch(`/search_patient?query=${id}`);
+                const data = await res.json();
+                if (data.success && data.results.length > 0) {
+                    const p = data.results[0];
+                    const html = `
+                    <div class="info-card-row"><div class="info-card-label">ID:</div><div class="info-card-value">${p.id}</div></div>
+                    <div class="info-card-row"><div class="info-card-label">Name:</div><div class="info-card-value">${p.name}</div></div>
+                    <div class="info-card-row"><div class="info-card-label">Age:</div><div class="info-card-value">${p.age}</div></div>
+                    <div class="info-card-row"><div class="info-card-label">Phone:</div><div class="info-card-value">${p.phone}</div></div>
+                    <div class="info-card-row"><div class="info-card-label">Address:</div><div class="info-card-value">${p.address}</div></div>
+                    <div class="info-card-row"><div class="info-card-label">History:</div><div class="info-card-value">${p.problems}</div></div>
+                    <div class="info-card-row"><div class="info-card-label">Last Visit:</div><div class="info-card-value">${p.last_visit}</div></div>
+                    `;
+                    document.getElementById('patient-details-content').innerHTML = html;
+                    document.getElementById('patientInfoModal').style.display = 'flex';
+                } else {
+                    alert('Patient details not found');
+                }
+            } catch (e) { alert('Error fetching details'); }
+        }
+
+        // --- Chat Functions ---
+        function openMessagesModal() {
+            document.getElementById('messagesModal').style.display = 'flex';
+            loadChatThreads();
+        }
+
+        async function loadChatThreads() {
+            if (document.getElementById('messagesModal').style.display === 'none') return;
+            try {
+                const res = await fetch('/admin/get_chat_threads');
+                const data = await res.json();
+                if (data.success) {
+                    const container = document.getElementById('chat-threads');
+                    container.innerHTML = '';
+                    data.threads.forEach(t => {
+                        const div = document.createElement('div');
+                        div.className = 'chat-thread';
+                        if (t.unread) div.classList.add('unread');
+                        div.innerHTML = `<div><strong>${t.patient_name}</strong> (ID: ${t.patient_id})</div><div style="font-size:0.8em; color:#666;">${t.last_message}</div>`;
+                        div.onclick = () => loadChatMessages(t.patient_id, t.patient_name);
+                        container.appendChild(div);
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        let currentChatPatientId = null;
+        async function loadChatMessages(patientId, patientName) {
+            currentChatPatientId = patientId;
+            document.getElementById('current-chat-id').value = patientId;
+            document.getElementById('chat-header').innerText = 'Chat with ' + patientName;
+
+            try {
+                const res = await fetch(`/admin/get_messages/${patientId}`);
+                const data = await res.json();
+                if (data.success) {
+                    const container = document.getElementById('chat-messages');
+                    container.innerHTML = '';
+                    data.messages.forEach(m => {
+                        const div = document.createElement('div');
+                        div.className = `msg ${m.sender === 'admin' ? 'admin' : 'patient'}`;
+                        div.innerText = m.content;
+                        container.appendChild(div);
+                    });
+                    container.scrollTop = container.scrollHeight;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function sendChatMessage() {
+            const patientId = document.getElementById('current-chat-id').value;
+            const message = document.getElementById('chat-input').value;
+            if (!patientId || !message) return;
+
+            try {
+                const res = await fetch('/admin/send_message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ patient_id: patientId, content: message })
+                });
+                if ((await res.json()).success) {
+                    document.getElementById('chat-input').value = '';
+                    loadChatMessages(patientId, document.getElementById('chat-header').innerText.replace('Chat with ', ''));
+                }
+            } catch (e) { alert('Error sending message'); }
+        }
+
+        // Close modals on outside click
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        }
+    </script>
+</body>
+
+</html>

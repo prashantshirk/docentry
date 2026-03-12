@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Activate Account - Hospital System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e9ecef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success {
+            color: #28a745;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .link {
+            margin-top: 20px;
+            display: block;
+            color: #6c757d;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <h2>Activate Account 🔐</h2>
+        <p style="color: #6c757d; margin-bottom: 20px;">Verify your identity to set a password.</p>
+        <div id="error-msg" class="error"></div>
+        <div id="success-msg" class="success"></div>
+        <form onsubmit="handleSignup(event)">
+            <input type="number" id="patient_id" placeholder="Patient ID" required>
+            <input type="tel" id="phone" placeholder="Registered Phone Number" required>
+            <input type="password" id="password" placeholder="Set New Password" required>
+            <button type="submit">Activate Account</button>
+        </form>
+        <a href="/patient/login" class="link">Back to Login</a>
+    </div>
+
+    <script>
+        async function handleSignup(event) {
+            event.preventDefault();
+            const patient_id = document.getElementById('patient_id').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-msg');
+            const successDiv = document.getElementById('success-msg');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/patient/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ patient_id, phone, password })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    successDiv.textContent = result.message;
+                    successDiv.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/patient/login';
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (e) {
+                errorDiv.textContent = 'Signup failed. Try again.';
+                errorDiv.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>

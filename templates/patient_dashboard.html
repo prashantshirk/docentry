@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --background-color: #f4f6f9;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--card-background);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section {
+            flex: 1;
+            background: var(--card-background);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            min-width: 300px;
+        }
+
+        h2 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .info-row {
+            margin-bottom: 10px;
+        }
+
+        .info-row strong {
+            color: #555;
+        }
+
+        /* Chat Styles */
+        .chat-box {
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .message.patient {
+            align-self: flex-end;
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .message.admin {
+            align-self: flex-start;
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+
+        /* Appt List */
+        .appt-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .appt-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Patient Dashboard</h1>
+        <a href="/patient/logout" class="btn btn-secondary" style="text-decoration: none;">Logout</a>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>My Profile</h2>
+            <div id="profile-content">Loading...</div>
+        </div>
+
+        <div class="section">
+            <h2>Appointments</h2>
+            <div style="margin-bottom: 20px;">
+                <h3>Book New</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <input type="date" id="book-date" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                    <input type="time" id="book-time" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                    <input type="text" id="book-doctor" placeholder="Doctor Name"
+                        style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                    <input type="text" id="book-issue" placeholder="Reason/Issue"
+                        style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                    <button onclick="bookAppointment()" class="btn btn-primary">Book</button>
+                </div>
+            </div>
+            <h3>Upcoming</h3>
+            <div id="appointments-list">Loading...</div>
+        </div>
+
+        <div class="section" style="flex-basis: 100%;">
+            <h2>Message Doctor/Admin</h2>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-msg" placeholder="Type a message...">
+                <button onclick="sendMessage()" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('/patient/get_data');
+                const result = await response.json();
+
+                if (result.success) {
+                    renderProfile(result.profile);
+                    renderAppointments(result.appointments);
+                    renderChat(result.messages);
+                } else {
+                    document.getElementById('profile-content').innerHTML = '<p>Error loading profile.</p>';
+                }
+            } catch (e) {
+                console.error("Error loading data", e);
+                document.getElementById('profile-content').innerHTML = '<p>Connection error.</p>';
+            }
+        }
+
+        function renderProfile(p) {
+            if (!p || !p.name) {
+                document.getElementById('profile-content').innerHTML = '<p>Profile data incomplete.</p>';
+                return;
+            }
+            const html = `
+                <div class="info-row"><strong>Name:</strong> ${p.name}</div>
+                <div class="info-row"><strong>ID:</strong> ${p.id}</div>
+                <div class="info-row"><strong>Age:</strong> ${p.age}</div>
+                <div class="info-row"><strong>Phone:</strong> ${p.phone}</div>
+                <div class="info-row"><strong>Address:</strong> ${p.address}</div>
+                <div class="info-row"><strong>History:</strong> ${p.problems}</div>
+            `;
+            document.getElementById('profile-content').innerHTML = html;
+        }
+
+        function renderAppointments(appts) {
+            const container = document.getElementById('appointments-list');
+            if (!appts || appts.length === 0) {
+                container.innerHTML = '<p>No appointments found.</p>';
+                return;
+            }
+            let html = '';
+            appts.forEach(a => {
+                // FIXED: Added single quotes around a.appt_id
+                html += `
+                    <div class="appt-item">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <strong>${a.date} at ${a.time}</strong>
+                                <br><strong>Doctor:</strong> ${a.doctor || 'Not assigned'}
+                                <br><strong>Issue:</strong> ${a.issue || 'Not specified'}
+                                <br><small>${a.notes || ''}</small>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="background: #eee; padding: 2px 6px; border-radius: 4px;">${a.status}</span>
+                                <br>
+                                <button onclick="deleteAppointment('${a.appt_id}')" class="btn" style="background: #dc3545; color: white; padding: 4px 8px; font-size: 0.8em; margin-top: 5px; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderChat(msgs) {
+            const box = document.getElementById('chat-box');
+            box.innerHTML = '';
+            if (!msgs || msgs.length === 0) {
+                box.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">No messages yet.</div>';
+                return;
+            }
+            msgs.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `message ${m.sender}`;
+                div.innerHTML = `
+                    <div>${m.content}</div>
+                    <div style="font-size: 0.8em; opacity: 0.7; margin-top: 4px;">${m.timestamp}</div>
+                `;
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function bookAppointment() {
+            const date = document.getElementById('book-date').value;
+            const time = document.getElementById('book-time').value;
+            const doctor = document.getElementById('book-doctor').value;
+            const issue = document.getElementById('book-issue').value;
+
+            if (!date || !time) {
+                alert('Please select date and time');
+                return;
+            }
+
+            try {
+                const response = await fetch('/patient/book_appointment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, time, doctor, issue })
+                });
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                const result = await response.json();
+                if (result.success) {
+                    alert('Booked successfully!');
+                    document.getElementById('book-date').value = '';
+                    document.getElementById('book-time').value = '';
+                    document.getElementById('book-doctor').value = '';
+                    document.getElementById('book-issue').value = '';
+                    loadData();
+                } else {
+                    alert(result.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error booking appointment: ' + e.message);
+            }
+        }
+
+        async function deleteAppointment(id) {
+            if (!confirm('Are you sure you want to cancel this appointment?')) return;
+            try {
+                const response = await fetch(`/delete_appointment/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                const result = await response.json();
+                if (result.success) {
+                    loadData();
+                } else {
+                    alert(result.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error cancelling appointment: ' + e.message);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-msg');
+            const content = input.value;
+            if (!content) return;
+
+            try {
+                const response = await fetch('/patient/send_message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                const result = await response.json();
+                if (result.success) {
+                    input.value = '';
+                    loadData();
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error sending message: ' + e.message);
+            }
+        }
+
+        // Initial load
+        loadData();
+
+        // Poll for new messages every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+
+</html>
